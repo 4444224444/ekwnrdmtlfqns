@@ -1,4 +1,6 @@
-import { Suspense, useState, useEffect } from "react";
+// src/ThreeScene.jsx
+
+import { Suspense } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -9,10 +11,7 @@ import {
   useScroll,
 } from "@react-three/drei";
 
-import Overlay from "./Overlay";
-import { useTimelineController } from "./useTimeline";
-
-// ====== 키프레임 ======
+// ====== 타임라인(키프레임) 공통 정의 ======
 const KEYS = [
   { pos: new THREE.Vector3(180, 180, 180), look: new THREE.Vector3(0, 0, 0), fov: 50 }, // front
   { pos: new THREE.Vector3(140, 50, 250), look: new THREE.Vector3(0, 20, 0), fov: 60 }, // right
@@ -20,6 +19,7 @@ const KEYS = [
   { pos: new THREE.Vector3(0, 360, 90), look: new THREE.Vector3(0, 0, 0), fov: 55 }, // top
 ];
 
+// ★ 이동은 길게, 홀드는 짧게 (전환이 길게 보이도록)
 const MOVE_DUR = [1.8, 1.8, 1.8];
 const HOLD_DUR = [0.25, 0.25, 0.25, 0.25];
 
@@ -35,6 +35,8 @@ const TIMELINE = (() => {
 })();
 
 const ease = (x) => 0.5 * (1 - Math.cos(Math.PI * x));
+
+// ====== 모델 경로 ======
 const MODEL_URL = `${import.meta.env.BASE_URL}models/scene.gltf`;
 
 /* 3D 모델 */
@@ -48,7 +50,7 @@ function Model() {
 }
 useGLTF.preload(MODEL_URL);
 
-/* 카메라 리그 */
+/* 스크롤 기반 카메라 이동 + 홀드 */
 function CameraRig() {
   const { camera } = useThree();
   const scroll = useScroll();
@@ -56,12 +58,11 @@ function CameraRig() {
 
   useFrame(() => {
     const time = THREE.MathUtils.clamp(scroll.offset, 0, 1) * total;
-    const seg =
-      segments.find((s) => time >= s.s && time <= s.e) ?? segments.at(-1);
+    const seg = segments.find((s) => time >= s.s && time <= s.e) ?? segments.at(-1);
 
     if (seg.type === "hold") {
       const k = KEYS[seg.key];
-      camera.position.lerp(k.pos, 0.2);
+      camera.position.lerp(k.pos, 0.2);               // ★ 살짝 더 느리게
       camera.lookAt(k.look);
       camera.fov = THREE.MathUtils.lerp(camera.fov, k.fov, 0.2);
       camera.updateProjectionMatrix();
@@ -74,7 +75,7 @@ function CameraRig() {
     const look = a.look.clone().lerp(b.look, f);
     const fov = THREE.MathUtils.lerp(a.fov, b.fov, f);
 
-    camera.position.lerp(pos, 0.12);
+    camera.position.lerp(pos, 0.12);                 // ★ 이동 추종 더 느리게
     camera.lookAt(look);
     camera.fov = THREE.MathUtils.lerp(camera.fov, fov, 0.12);
     camera.updateProjectionMatrix();
@@ -83,47 +84,20 @@ function CameraRig() {
   return null;
 }
 
-/**
- * 컨트롤러 결과를 부모(ThreeScene) state로 "끌어올리는" 브리지
- * - ScrollControls 자식이어야 useScroll 사용 가능
- * - DOM을 렌더하지 않고 onChange로만 부모에 값을 전달
- */
-function ControllerBridge({ onChange }) {
-  const { sceneIndex, phase } = useTimelineController(TIMELINE, {
-    enterRatio: 0.2, exitRatio: 0.2, hysteresis: 0.02,
-  });
-
-  useEffect(() => {
-    onChange({ sceneIndex, phase });
-  }, [sceneIndex, phase, onChange]);
-
-  return null;
-}
-
 export default function ThreeScene() {
-  // Overlay는 Canvas "밖"에서 렌더 → 상태를 부모에 보관
-  const [overlayState, setOverlayState] = useState({ sceneIndex: -1, phase: "idle" });
-
   return (
-    <>
-      <Canvas camera={{ position: [140, 50, 250], fov: 50, near: 0.1, far: 2000 }}>
-        <color attach="background" args={["#0b0f14"]} />
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[3, 5, 2]} intensity={1.2} />
+    <Canvas camera={{ position: [140, 50, 250], fov: 50, near: 0.1, far: 2000 }}>
+      <color attach="background" args={["#0b0f14"]} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[3, 5, 2]} intensity={1.2} />
 
-        <Suspense fallback={null}>
-          <ScrollControls pages={6} damping={0.12}>
-            <Model />
-            <CameraRig />
-            {/* 여기서 컨트롤러를 실행하고, 부모 state만 갱신 */}
-            <ControllerBridge onChange={setOverlayState} />
-          </ScrollControls>
-          <Environment preset="city" />
-        </Suspense>
-      </Canvas>
-
-      {/* DOM 오버레이는 Canvas 밖 */}
-      <Overlay sceneIndex={overlayState.sceneIndex} phase={overlayState.phase} />
-    </>
+      <Suspense fallback={null}>
+        <ScrollControls pages={6} damping={0.12}>
+          <Model />
+          <CameraRig />
+        </ScrollControls>
+        <Environment preset="city" />
+      </Suspense>
+    </Canvas>
   );
 }
