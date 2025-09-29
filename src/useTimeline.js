@@ -4,20 +4,22 @@ import { useFrame } from "@react-three/fiber";
 
 /**
  * TIMELINE: { segments:[{type:'hold'|'move', s,e, key?, a?, b?}], total:number }
+ * -> 이거 무슨 말이애요??? 이건 나도 모르겠어 시발ㅋㅋㅋㅋ
  * 반환: { time, sceneIndex(-1|0..N-1), phase: 'idle'|'enter'|'steady'|'exit' }
+ * -> 대충 우리 유니티에서 배웟던 걸 응용??한다고 생각하면 될까 시픔...
  */
 export function useTimelineController(TIMELINE, opts = {}) {
   const { segments, total } = TIMELINE;
-  const enterRatio = opts.enterRatio ?? 0.2;   // hold 앞 20%
-  const exitRatio  = opts.exitRatio  ?? 0.2;   // hold 뒤 20%
-  const hysteresis = opts.hysteresis ?? 0.02;  // 경계 여유
+  const enterRatio = opts.enterRatio ?? 0.01;  
+  const exitRatio  = opts.exitRatio  ?? 0.01;   
+  const hysteresis = opts.hysteresis ?? 0.02;  
 
   const scroll = useScroll();
 
   const [state, setState] = useState({
     time: 0,
     sceneIndex: -1,
-    phase: "idle",
+    phase: "idle", 
   });
   const prevRef = useRef(state);
 

@@ -12,16 +12,16 @@ import {
 import Overlay from "./Overlay";
 import { useTimelineController } from "./useTimeline";
 
-// ====== 키프레임 ======
+// 카메라 전환되는 거 어디다가 할지 끄아아아아아아아아아
 const KEYS = [
-  { pos: new THREE.Vector3(180, 180, 180), look: new THREE.Vector3(0, 0, 0), fov: 50 }, // front
-  { pos: new THREE.Vector3(140, 50, 250), look: new THREE.Vector3(0, 20, 0), fov: 60 }, // right
-  { pos: new THREE.Vector3(-220, 70, 160), look: new THREE.Vector3(0, 25, 0), fov: 40 }, // left
-  { pos: new THREE.Vector3(0, 360, 90), look: new THREE.Vector3(0, 0, 0), fov: 55 }, // top
+  { pos: new THREE.Vector3(180, 180, 180), look: new THREE.Vector3(0, 0, 0), fov: 50 }, // 1번째
+  { pos: new THREE.Vector3(140, 50, 250), look: new THREE.Vector3(0, 20, 0), fov: 60 }, // 2번째
+  { pos: new THREE.Vector3(-220, 70, 160), look: new THREE.Vector3(0, 25, 0), fov: 40 }, // 3번째
+  { pos: new THREE.Vector3(0, 360, 90), look: new THREE.Vector3(0, 0, 0), fov: 55 }, // 4번째
 ];
 
-const MOVE_DUR = [1.8, 1.8, 1.8];
-const HOLD_DUR = [0.25, 0.25, 0.25, 0.25];
+const MOVE_DUR = [1.8, 1.8, 1.8]; // 이건 움직이는 거
+const HOLD_DUR = [0.5, 0.5, 0.5, 0.5]; // 얼마나 홀드되어잇을건지 초 정하는 거
 
 const TIMELINE = (() => {
   const segs = [];
@@ -37,7 +37,7 @@ const TIMELINE = (() => {
 const ease = (x) => 0.5 * (1 - Math.cos(Math.PI * x));
 const MODEL_URL = `${import.meta.env.BASE_URL}models/scene.gltf`;
 
-/* 3D 모델 */
+/* 요기블록이쓰리디모델불러오는거 */
 function Model() {
   const { scene } = useGLTF(MODEL_URL);
   return (
@@ -48,7 +48,7 @@ function Model() {
 }
 useGLTF.preload(MODEL_URL);
 
-/* 카메라 리그 */
+/* 카메라 설정씨발럼아 */
 function CameraRig() {
   const { camera } = useThree();
   const scroll = useScroll();
@@ -85,8 +85,9 @@ function CameraRig() {
 
 /**
  * 컨트롤러 결과를 부모(ThreeScene) state로 "끌어올리는" 브리지
- * - ScrollControls 자식이어야 useScroll 사용 가능
- * - DOM을 렌더하지 않고 onChange로만 부모에 값을 전달
+ *  솔직히 뭔 개소린지 잘은 모르겟는데 부모로 끌어올려야 렌더가 잘 된대요 원리가 뭘까
+ * - ScrollControls 자식이어야 useScroll 사용 가능함!! 이거 기억!!
+ * - DOM을 렌더하지 않고 onChange로만 부모에 값을 전달해서 띄우기 이것도 기억!!!!
  */
 function ControllerBridge({ onChange }) {
   const { sceneIndex, phase } = useTimelineController(TIMELINE, {
@@ -101,7 +102,7 @@ function ControllerBridge({ onChange }) {
 }
 
 export default function ThreeScene() {
-  // Overlay는 Canvas "밖"에서 렌더 → 상태를 부모에 보관
+  // Overlay는 Canvas "밖"에서 렌더하고 그 상태를 부모에 보관을 해야댐;; ㅈㄴ어렵뉴
   const [overlayState, setOverlayState] = useState({ sceneIndex: -1, phase: "idle" });
 
   return (
@@ -115,14 +116,14 @@ export default function ThreeScene() {
           <ScrollControls pages={6} damping={0.12}>
             <Model />
             <CameraRig />
-            {/* 여기서 컨트롤러를 실행하고, 부모 state만 갱신 */}
+            {/* 부모 state만 갱신하기*/}
             <ControllerBridge onChange={setOverlayState} />
           </ScrollControls>
           <Environment preset="city" />
         </Suspense>
       </Canvas>
 
-      {/* DOM 오버레이는 Canvas 밖 */}
+      {/* DOM 오버레이는 Canvas 밖에 둬야 렌더가 제대로 된대요 암튼 그렇대 */}
       <Overlay sceneIndex={overlayState.sceneIndex} phase={overlayState.phase} />
     </>
   );

@@ -1,11 +1,15 @@
 import React from "react";
 
-// KEYS 수(4개)에 맞춘 카드 데이터
+// KEYS 수(4개)에 맞춘 카드 데이터 + 개별 스타일
 const overlayData = [
-  { id: 0, title: "FRONT", subtitle: "첫 번째 씬", body: "여기에 첫 번째 설명을 채워 넣으세요." },
-  { id: 1, title: "RIGHT", subtitle: "두 번째 씬", body: "두 번째 키프레임 도착 시 나타납니다." },
-  { id: 2, title: "LEFT",  subtitle: "세 번째 씬", body: "이동 중에는 아무 카드도 보이지 않습니다." },
-  { id: 3, title: "TOP",   subtitle: "네 번째 씬", body: "hold 구간 중앙에서 또렷하게 유지됩니다." },
+  { id: 0, title: "요기 첫번째에다가", subtitle: "이렇게띄우면", body: "되던데 캬아아아아아아아아아악",
+    style: { color: "yellow", fontSize: "5.5rem", textAlign: "left" } },
+  { id: 1, title: "ㅈㄴ졸려", subtitle: "아름다운이땅에금수강산에", body: "집에가자ㅈ제발내소원",
+    style: { color: "red", fontSize: "2.5rem", textAlign: "center" } },
+  { id: 2, title: "자퇴하실분", subtitle: "저요저요저요저요저요저요저요저요", body: "이런썅칼!!집에보내줘근데졸업도시켜줘",
+    style: { color: "blue", fontSize: "4.5rem", textAlign: "right" } },
+  { id: 3, title: "쌀국수", subtitle: "엌ㅋㅋㅋㅋ", body: "조희원바부안나희바부",
+    style: { color: "green", fontSize: "1.5rem", textAlign: "center" } },
 ];
 
 export default function Overlay({ sceneIndex, phase }) {
@@ -14,7 +18,7 @@ export default function Overlay({ sceneIndex, phase }) {
 
   return (
     <div className="overlay-root">
-      <div className={`card ${phase}`}>
+      <div className={`card ${phase}`} style={card.style}>
         <div className="kicker">{card.subtitle}</div>
         <h2 className="title">{card.title}</h2>
         <p className="body">{card.body}</p>
@@ -26,20 +30,15 @@ export default function Overlay({ sceneIndex, phase }) {
           pointer-events: none; z-index: 10;
         }
         .card {
-          max-width: 36rem; width: min(90vw, 36rem);
-          background: rgba(12,16,22,0.6);
-          backdrop-filter: blur(6px);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 16px; padding: 20px 24px; color: #e9f1fa;
-          opacity: 0; transform: translateY(8px);
+          opacity: 0; transform: translateY(12px);
           transition: opacity 300ms ease, transform 300ms ease;
         }
         .card.enter, .card.steady { opacity: 1; transform: translateY(0); }
-        .card.exit { opacity: 0; transform: translateY(-4px); }
+        .card.exit { opacity: 0; transform: translateY(-8px); }
 
-        .kicker { font-size: 0.85rem; letter-spacing: .12em; opacity: .8; }
-        .title { margin: 6px 0 8px; font-size: clamp(20px, 4vw, 32px); line-height: 1.15; }
-        .body  { line-height: 1.6; opacity: .9; }
+        .kicker { opacity: .9; margin-bottom: .5rem; }
+        .title  {  2.5rem; font-weight: bold; margin: .25rem 0; }
+        .body   {  1.5rem; margin-top: .5rem; }
       `}</style>
     </div>
   );
